@@ -1,13 +1,18 @@
-[![Donate](https://img.shields.io/badge/donate-paypal-yellowgreen.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZEW8TFQCU2MSJ&source=url)
-[![Docker Build Status](https://github.com/oznu/docker-homebridge/workflows/Build/badge.svg)](https://github.com/oznu/docker-homebridge/actions)
-[![Docker Pulls](https://img.shields.io/docker/pulls/oznu/homebridge.svg)](https://hub.docker.com/r/oznu/homebridge/)
-[![Discord](https://img.shields.io/discord/432663330281226270?color=728ED5&logo=discord&label=discord)](https://discord.gg/Cmq8a44)
+# Docker Homebridge Zwave
 
-# Docker Homebridge
+This Alpine/Ubuntu Linux based Docker image allows you to run [Nfarina's](https://github.com/nfarina) [Homebridge](https://github.com/nfarina/homebridge) on your home network which emulates the iOS HomeKit API. It is a fork of the main [docker-homebridge](https://github.com/oznu/docker-homebridge) repo with added support for native ZWave devices via [open-zwave](https://github.com/OpenZWave/open-zwave) and [homebridge-openzwave](https://www.npmjs.com/package/homebridge-openzwave)
 
-This Alpine/Ubuntu Linux based Docker image allows you to run [Nfarina's](https://github.com/nfarina) [Homebridge](https://github.com/nfarina/homebridge) on your home network which emulates the iOS HomeKit API.
+## Why a Fork?
+`docker-homebridge` recommends adding in additional packages during the image `startup.sh` script. Getting OpenZWave working requires building from source (and is fairly tricky on Alpine). Packaging this as a Docker image allows for much faster boots/restarts of the Docker container and makes it a bit easier to get started.
 
-This is a multi-arch image and will also run on a Raspberry Pi or other Docker-enabled ARMv6/7/8 devices.
+This fork is primarily for my own usage at home, where I run homebridge in my homelab. I aim to keep it up to date with the main [docker-homebridge](https://github.com/oznu/docker-homebridge) as much as possible (but PRs always welcome if I miss a version)!
+
+As of now, I have removed support for [raspbian](https://github.com/oznu/docker-homebridge/blob/master/raspbian-installer.sh) and [Dockerfile.ubuntu](https://github.com/oznu/docker-homebridge/blob/master/Dockerfile.ubuntu). _Note: The image will run just fine on Ubuntu, so don't let that stop you! I'm just not supporting people who want the Docker image itself to run Ubuntu rather than Alpine._
+
+I've also removed support for the [https://github.com/oznu/docker-homebridge#5-logs-showing-service-name-conflict-or-host-name-conflict](no-avahi) version of the image. This is primarily to reduce complexity for my own work - I'd welcome a PR adding support for this back in, and I may get around to it some point in the future :)
+
+## Resources
+_these all link to the primary repository, there's nothing special here_
 
   * [Guides](#guides)
   * [Compatibility](#compatibility)
@@ -20,7 +25,6 @@ This is a multi-arch image and will also run on a Raspberry Pi or other Docker-e
 
 ## Guides
 
-- [Running Homebridge on a Raspberry Pi](https://github.com/oznu/docker-homebridge/wiki/Homebridge-on-Raspberry-Pi)
 - [Running Homebridge on a Synology NAS](https://github.com/oznu/docker-homebridge/wiki/Homebridge-on-Synology)
 
 ## Compatibility
@@ -40,18 +44,8 @@ docker run \
   -e HOMEBRIDGE_CONFIG_UI=1 \
   -e HOMEBRIDGE_CONFIG_UI_PORT=8080 \
   -v </path/to/config>:/homebridge \
-  oznu/homebridge
+  seanherron/homebridge-zwave
 ```
-
-## Raspberry Pi
-
-This docker image has been tested on the following Raspberry Pi models:
-
-* Raspberry Pi 1 Model B
-* Raspberry Pi 3 Model B
-* Raspberry Pi Zero W
-
-[See the wiki for a guide on getting Homebridge up and running on a Raspberry Pi](https://github.com/oznu/docker-homebridge/wiki/Homebridge-on-Raspberry-Pi).
 
 ## Parameters
 
@@ -72,10 +66,10 @@ The parameters are split into two halves, separated by a colon, the left hand si
 
 ##### *Homebridge UI Options*:
 
-This is the only supported method of running [homebridge-config-ui-x](https://github.com/oznu/homebridge-config-ui-x) on oznu/homebridge.
+This is the only supported method of running [homebridge-config-ui-x](https://github.com/seanherron/homebridge-zwave-config-ui-x) on seanherron/homebridge-zwave.
 
-* `-e HOMEBRIDGE_CONFIG_UI=1` - Enable and configure [homebridge-config-ui-x](https://github.com/oznu/homebridge-config-ui-x) which allows you to manage and configure Homebridge from your web browser.
-* `-e HOMEBRIDGE_CONFIG_UI_PORT=8080` - The port to run [homebridge-config-ui-x](https://github.com/oznu/homebridge-config-ui-x) on. Defaults to port 8080.
+* `-e HOMEBRIDGE_CONFIG_UI=1` - Enable and configure [homebridge-config-ui-x](https://github.com/seanherron/homebridge-zwave-config-ui-x) which allows you to manage and configure Homebridge from your web browser.
+* `-e HOMEBRIDGE_CONFIG_UI_PORT=8080` - The port to run [homebridge-config-ui-x](https://github.com/seanherron/homebridge-zwave-config-ui-x) on. Defaults to port 8080.
 
 ### User / Group Identifiers
 
@@ -151,7 +145,7 @@ If you prefer to use [Docker Compose](https://docs.docker.com/compose/):
 version: '2'
 services:
   homebridge:
-    image: oznu/homebridge:latest
+    image: seanherron/homebridge-zwave:latest
     restart: always
     network_mode: host
     environment:
@@ -178,26 +172,6 @@ You may need to provide the server name of your Synology NAS using the `DSM_HOST
 
 ffmpeg, with `libfdk-aac` audio support is included in this image.
 
-#### 4. Try the ubuntu tag
-
-Some plugins don't like Alpine Linux so this project also provides a Ubuntu based version of the image.
-
-```
-docker run oznu/homebridge:ubuntu
-```
-
-See the wiki for a list of image variants: https://github.com/oznu/docker-homebridge/wiki
-
-#### 5. Logs showing `Service name conflict` or `Host name conflict`
-
-You may need to use a `no-avahi` version of this image to prevent conflicts with the Avahi service running on the host:
-
-```shell
-# Alpine
-docker run oznu/homebridge:no-avahi
-
-# Ubuntu
-docker run oznu/homebridge:ubuntu-no-avahi
 ```
 
 See the wiki for a list of image variants: https://github.com/oznu/docker-homebridge/wiki
@@ -208,7 +182,7 @@ Join the [Official Homebridge Discord](https://discord.gg/Cmq8a44) community and
 
 ## License
 
-Copyright (C) 2017-2020 oznu
+docker-homebridge-zwave is a fork of docker-homebridge. (https://github.com/oznu/docker-homebridge) by oznu, copyright 2017-2020. Remaining pieces are by Sean Herron, copyright 2020.
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
